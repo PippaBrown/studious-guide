@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Beat the PB</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d0d;
+      --surface:   #161616;
+      --surface2:  #1f1f1f;
+      --border:    #2a2a2a;
+      --accent:    #b3ff5e;   /* vivid lime — sporty energy */
+      --accent2:   #ff6b6b;   /* coral red — effort/danger */
+      --accent3:   #5ec4ff;   /* sky blue — cool data */
+      --text:      #e8e8e8;
+      --muted:     #666;
+      --mono:      'Space Mono', monospace;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 2.5rem 2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .pb-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.25rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+    }
+    .pb-badge span { color: var(--accent2); }
+    .header-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-section {
+      padding: 1.8rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.6rem;
+    }
+    .progress-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .progress-current {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+    .progress-ends {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.4rem;
+    }
+    .progress-ends span {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+    .progress-ends .end-pb { color: var(--accent); font-weight: 700; }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-cell {
+      padding: 1.2rem 2rem;
+      flex: 1 1 130px;
+    }
+    .stat-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .stat-value.highlight { color: var(--accent3); }
+    .stat-value.pb-color { color: var(--accent); }
+
+    /* ── LOG FORM ── */
+    .log-section {
+      padding: 1.8rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .section-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+    .form-group.wide {
+      grid-column: 1 / -1;
+    }
+    input[type="date"] {
+      -webkit-appearance: none;
+      appearance: none;
+      min-width: 0;
+      width: 100%;
+    }
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.wide { grid-column: 1; }
+    }
+    label {
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    input, textarea, select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 2px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+    }
+    textarea { resize: vertical; min-height: 38px; height: 38px; }
+
+    .btn {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.65rem 1.4rem;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-danger { background: transparent; color: var(--accent2); border: 1px solid var(--accent2); font-size: 0.65rem; padding: 0.3rem 0.6rem; }
+    .btn-danger:hover { background: var(--accent2); color: #000; }
+
+    /* ── TABLE ── */
+    .table-section {
+      padding: 1.8rem 2rem;
+    }
+    .table-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 420px;
+    }
+    thead tr {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 0.7rem 0.6rem;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    td {
+      padding: 0.75rem 0.6rem;
+      font-size: 0.75rem;
+      vertical-align: middle;
+    }
+    td.pace { color: var(--accent3); font-weight: 700; }
+    td.equiv { color: var(--accent); font-weight: 700; }
+    td.equiv.is-pb { color: var(--accent2); }
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── PACE BADGE ── */
+    .pace-tag {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      border-radius: 2px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .pace-tag.fast { background: rgba(179,255,94,0.15); color: var(--accent); border: 1px solid rgba(179,255,94,0.3); }
+    .pace-tag.med  { background: rgba(94,196,255,0.12); color: var(--accent3); border: 1px solid rgba(94,196,255,0.25); }
+    .pace-tag.slow { background: rgba(255,107,107,0.1); color: var(--accent2); border: 1px solid rgba(255,107,107,0.2); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.2rem 2rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    @media (max-width: 600px) {
+      header, .progress-section, .log-section, .table-section { padding: 1.2rem 1rem; }
+      .stat-cell { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <h1>BEAT THE PB</h1>
+    <div class="pb-badge">target <span>25:10</span></div>
+  </div>
+  <div class="header-sub">parkrun training log</div>
+</header>
+
+<div class="progress-section">
+  <div class="progress-meta">
+    <span class="progress-label">equivalent 5k progress</span>
+    <span class="progress-current" id="progressLabel">—</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <div class="progress-ends">
+    <span>35:00 start</span>
+    <span class="end-pb">25:10 PB ★</span>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-cell">
+    <div class="stat-label">Runs logged</div>
+    <div class="stat-value" id="statRuns">0</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-label">Best equiv 5k</div>
+    <div class="stat-value pb-color" id="statBest">—</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-label">Best pace /km</div>
+    <div class="stat-value highlight" id="statPace">—</div>
+  </div>
+</div>
+
+
+<div class="table-section">
+  <div class="table-header-row">
+    <div class="section-title" style="margin-bottom:0">run history</div>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Route</th>
+          <th>Dist</th>
+          <th>Time</th>
+          <th>Pace</th>
+          <th>~5k</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="runBody">
+        <tr id="emptyRow">
+          <td colspan="7" class="empty-state">no runs logged yet. get out there.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="log-section">
+  <div class="section-title">log a run</div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label for="fDate">Date</label>
+      <input type="date" id="fDate" />
+    </div>
+    <div class="form-group">
+      <label for="fRoute">Route</label>
+      <input type="text" id="fRoute" placeholder="e.g. hilly 4km loop" />
+    </div>
+    <div class="form-group">
+      <label for="fDist">Distance (km)</label>
+      <input type="number" id="fDist" step="0.01" min="0.1" placeholder="4.00" />
+    </div>
+    <div class="form-group">
+      <label for="fTime">Time (mm:ss)</label>
+      <input type="text" id="fTime" placeholder="24:30" maxlength="8" />
+    </div>
+    <div class="form-group wide">
+      <label for="fNotes">Notes</label>
+      <textarea id="fNotes" placeholder="how it felt, conditions, effort level..."></textarea>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="logRun()">+ LOG RUN</button>
+  <span id="formError" style="margin-left:1rem;font-size:0.72rem;color:var(--accent2);"></span>
+</div>
+
+
+
+<script>
+  const PB_SECS   = 25 * 60 + 10;   // 25:10 in seconds
+  const START_SECS = 35 * 60;         // 35:00 in seconds
+  const PB_5K_PACE = PB_SECS / 5;    // pace per km at PB
+
+  let runs = JSON.parse(localStorage.getItem('pb_runs') || '[]');
+
+  function parseTime(str) {
+    str = str.trim();
+    const parts = str.split(':');
+    if (parts.length === 2) {
+      const m = parseInt(parts[0], 10);
+      const s = parseInt(parts[1], 10);
+      if (!isNaN(m) && !isNaN(s) && s < 60) return m * 60 + s;
+    }
+    return null;
+  }
+
+  function secsToMmss(s) {
+    s = Math.round(s);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2,'0')}`;
+  }
+
+  function equiv5k(distKm, timeSecs) {
+    const pacePerKm = timeSecs / distKm;
+    return pacePerKm * 5;
+  }
+
+  function paceTag(pacePerKm) {
+    if (pacePerKm <= 5 * 60 + 2) return 'fast';   // sub 5:02/km = sub 25:10 pace
+    if (pacePerKm <= 6 * 60)      return 'med';
+    return 'slow';
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+  }
+
+  function save() {
+    localStorage.setItem('pb_runs', JSON.stringify(runs));
+  }
+
+  function render() {
+    const tbody = document.getElementById('runBody');
+    const empty = document.getElementById('emptyRow');
+
+    // clear non-empty rows
+    Array.from(tbody.querySelectorAll('tr:not(#emptyRow)')).forEach(r => r.remove());
+
+    if (runs.length === 0) {
+      empty.style.display = '';
+      updateStats(null);
+      updateProgress(null);
+      return;
+    }
+    empty.style.display = 'none';
+
+    // sort newest first for display
+    const sorted = [...runs].sort((a, b) => b.date.localeCompare(a.date));
+
+    sorted.forEach((r, i) => {
+      const pace = r.timeSecs / r.dist;
+      const eq5k = equiv5k(r.dist, r.timeSecs);
+      const isPB = eq5k <= PB_SECS;
+      const tag = paceTag(pace);
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${formatDate(r.date)}</td>
+        <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.route}${r.notes ? ' — ' + r.notes : ''}">${r.route || '—'}</td>
+        <td>${r.dist.toFixed(1)}</td>
+        <td>${secsToMmss(r.timeSecs)}</td>
+        <td class="pace"><span class="pace-tag ${tag}">${secsToMmss(pace)}</span></td>
+        <td class="equiv${isPB ? ' is-pb' : ''}">${secsToMmss(eq5k)}${isPB ? ' ★' : ''}</td>
+        <td><button class="btn btn-danger" onclick="deleteRun('${r.id}')">✕</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // stats
+    const allEq5k = runs.map(r => equiv5k(r.dist, r.timeSecs));
+    const bestEq5k = Math.min(...allEq5k);
+    const allPaces = runs.map(r => r.timeSecs / r.dist);
+    const bestPace = Math.min(...allPaces);
+    const totalDist = runs.reduce((a, r) => a + r.dist, 0);
+
+    updateStats({ runs: runs.length, bestEq5k, bestPace });
+    updateProgress(bestEq5k);
+  }
+
+  function updateStats(data) {
+    if (!data) {
+      document.getElementById('statRuns').textContent = '0';
+      document.getElementById('statBest').textContent = '—';
+      document.getElementById('statPace').textContent = '—';
+      return;
+    }
+    const { runs: n, bestEq5k, bestPace } = data;
+    document.getElementById('statRuns').textContent = n;
+    document.getElementById('statBest').textContent = secsToMmss(bestEq5k);
+    document.getElementById('statPace').textContent = secsToMmss(bestPace) + '/km';
+  }
+
+  function updateProgress(bestEq5k) {
+    const fill = document.getElementById('progressFill');
+    const label = document.getElementById('progressLabel');
+
+    if (bestEq5k === null) {
+      fill.style.width = '0%';
+      label.textContent = '—';
+      return;
+    }
+
+    // clamp between start and PB
+    const clamped = Math.min(Math.max(bestEq5k, PB_SECS), START_SECS);
+    // progress: 0% = 35:00, 100% = 25:10
+    const pct = ((START_SECS - clamped) / (START_SECS - PB_SECS)) * 100;
+    fill.style.width = Math.max(0, Math.min(100, pct)).toFixed(1) + '%';
+    label.textContent = secsToMmss(bestEq5k);
+  }
+
+  function logRun() {
+    const err = document.getElementById('formError');
+    err.textContent = '';
+
+    const date  = document.getElementById('fDate').value;
+    const route = document.getElementById('fRoute').value.trim();
+    const dist  = parseFloat(document.getElementById('fDist').value);
+    const timeStr = document.getElementById('fTime').value;
+    const notes = document.getElementById('fNotes').value.trim();
+
+    const timeSecs = parseTime(timeStr);
+
+    if (!date)           { err.textContent = 'date required'; return; }
+    if (!dist || dist <= 0) { err.textContent = 'distance must be > 0'; return; }
+    if (timeSecs === null) { err.textContent = 'time must be mm:ss'; return; }
+
+    runs.push({
+      id: Date.now().toString(),
+      date, route, dist, timeSecs, notes
+    });
+
+    save();
+    render();
+
+    // clear form
+    document.getElementById('fRoute').value = '';
+    document.getElementById('fDist').value = '';
+    document.getElementById('fTime').value = '';
+    document.getElementById('fNotes').value = '';
+  }
+
+  function deleteRun(id) {
+    runs = runs.filter(r => r.id !== id);
+    save();
+    render();
+  }
+
+  // default date to today
+  document.getElementById('fDate').valueAsDate = new Date();
+
+  render();
+</script>
+</body>
+</html>
